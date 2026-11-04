@@ -247,7 +247,7 @@ async function loadCommunityRecipes() {
     filterRecipes();
     showApiStatus(`${sharedRecipes.length} community recipe${sharedRecipes.length === 1 ? "" : "s"} shared so far`);
   } catch (error) {
-    showApiStatus("Community recipes need the website server to be running. Existing recipes are still available.", true);
+    showApiStatus("Community recipes could not be loaded right now. Existing recipes are still available.", true);
     console.error("Could not load community recipes:", error);
   }
 }

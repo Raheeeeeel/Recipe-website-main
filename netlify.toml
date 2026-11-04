@@ -1,0 +1,4 @@
+[build]
+  base = "Recipe-website-main"
+  publish = "."
+  functions = "netlify/functions"
