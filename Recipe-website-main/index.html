@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Recipe Book</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ── HEADER ── -->
+  <header>
+    <div class="logo">The <span>Recipe</span> Book</div>
+    <div class="header-tagline">Curated culinary collection</div>
+  </header>
+
+  <!-- ── HERO ── -->
+  <section class="hero">
+    <div class="hero-label">✦ Home Cooking Made Beautiful</div>
+    <h1>Cook with <em>confidence</em>,<br>eat with joy</h1>
+    <p>Discover handpicked recipes from around the world, with step-by-step instructions for every skill level.</p>
+    <div class="hero-search">
+      <input type="text" id="searchInput" placeholder="Search by recipe name..." oninput="filterRecipes()">
+      <button onclick="filterRecipes()">Search</button>
+    </div>
+  </section>
+
+  <!-- ── FILTER BAR ── -->
+  <div class="filter-bar">
+    <span class="filter-label">Filter:</span>
+    <button class="tag active" onclick="setFilter('all', this)">All</button>
+    <button class="tag" onclick="setFilter('Asian', this)">Asian</button>
+    <button class="tag" onclick="setFilter('Main', this)">Main</button>
+    <button class="tag" onclick="setFilter('Dessert', this)">Dessert</button>
+    <button class="tag" onclick="setFilter('Drink', this)">Drink</button>
+    <button class="tag" onclick="setFilter('Italian', this)">Italian</button>
+    <button class="tag" onclick="setFilter('Mexican', this)">Mexican</button>
+    <button class="tag" onclick="setFilter('Mediterranean', this)">Mediterranean</button>
+    <button class="tag" onclick="setFilter('Vegetable', this)">Vegetable</button>
+    <button class="tag" onclick="setFilter('easy', this)">Easy</button>
+    <button class="tag" onclick="setFilter('medium', this)">Medium</button>
+    <button class="tag" onclick="setFilter('hard', this)">Hard</button>
+  </div>
+
+  <!-- ── RECIPE GRID ── -->
+  <main class="grid-section">
+    <div class="section-header">
+      <h2 class="section-title">Featured Recipes</h2>
+      <span class="recipe-count" id="recipeCount"></span>
+    </div>
+    <div class="recipe-grid" id="recipeGrid">
+      <div class="no-results" id="noResults">No recipes found. Try a different search or filter.</div>
+    </div>
+  </main>
+
+  <!-- ── MODAL ── -->
+  <div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+    <div class="modal" id="modal">
+      <button class="modal-close" onclick="closeModalDirect()">✕</button>
+      <div class="modal-hero">
+        <img id="mImg" src="" alt="">
+        <div class="modal-hero-overlay"></div>
+        <div class="modal-hero-text">
+          <span class="modal-cuisine-badge" id="mCuisine"></span>
+          <span class="modal-main-badge" id="mMain"></span>
+          <div class="modal-title" id="mTitle"></div>
+        </div>
+      </div>
+      <div class="modal-body">
+        <div class="modal-stats">
+          <div class="stat-block">
+            <span class="stat-value" id="mPrepTime"></span>
+            <div class="stat-label">Prep Time</div>
+          </div>
+          <div class="stat-block">
+            <span class="stat-value" id="mCookTime"></span>
+            <div class="stat-label">Cook Time</div>
+          </div>
+          <div class="stat-block">
+            <span class="stat-value" id="mServings"></span>
+            <div class="stat-label">Servings</div>
+          </div>
+        </div>
+        <div class="modal-section-title">🥬 Ingredients</div>
+        <div class="ingredients-grid" id="mIngredients"></div>
+        <div class="modal-section-title">👨‍🍳 Instructions</div>
+        <ol class="steps-list" id="mSteps"></ol>
+        <div class="tips-box" id="mTips"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── FOOTER ── -->
+  <footer>
+    Made with <span>♥</span> for food lovers everywhere
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
