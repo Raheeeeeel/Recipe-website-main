@@ -12,14 +12,15 @@
   <!-- ── HEADER ── -->
   <header>
     <div class="logo">The <span>Recipe</span> Book</div>
-    <div class="header-tagline">Curated culinary collection</div>
+    <div class="header-tagline">A community cookbook</div>
+    <button class="share-button" type="button" onclick="openAddRecipe()">＋ Share a recipe</button>
   </header>
 
   <!-- ── HERO ── -->
   <section class="hero">
     <div class="hero-label">✦ Home Cooking Made Beautiful</div>
     <h1>Cook with <em>confidence</em>,<br>eat with joy</h1>
-    <p>Discover handpicked recipes from around the world, with step-by-step instructions for every skill level.</p>
+    <p>Discover favorites from kitchens everywhere, or add a dish of your own to our growing community cookbook.</p>
     <div class="hero-search">
       <input type="text" id="searchInput" placeholder="Search by recipe name..." oninput="filterRecipes()">
       <button onclick="filterRecipes()">Search</button>
@@ -43,10 +44,14 @@
     <button class="tag" onclick="setFilter('hard', this)">Hard</button>
   </div>
 
+  <div class="community-note" id="apiStatus" role="status" aria-live="polite">
+    Loading community recipes…
+  </div>
+
   <!-- ── RECIPE GRID ── -->
   <main class="grid-section">
     <div class="section-header">
-      <h2 class="section-title">Featured Recipes</h2>
+      <h2 class="section-title">From our kitchens</h2>
       <span class="recipe-count" id="recipeCount"></span>
     </div>
     <div class="recipe-grid" id="recipeGrid">
@@ -89,6 +94,70 @@
         <div class="tips-box" id="mTips"></div>
       </div>
     </div>
+  </div>
+
+  <!-- ── ADD RECIPE ── -->
+  <div class="modal-overlay" id="addRecipeOverlay" onclick="closeAddRecipe(event)">
+    <section class="add-recipe-modal" role="dialog" aria-modal="true" aria-labelledby="addRecipeTitle">
+      <button class="modal-close add-close" type="button" aria-label="Close form" onclick="closeAddRecipeDirect()">✕</button>
+      <div class="add-recipe-heading">
+        <span class="hero-label">Pass it around</span>
+        <h2 id="addRecipeTitle">Share your recipe</h2>
+        <p>Every great dish has a story. Add yours to the table.</p>
+      </div>
+      <form id="addRecipeForm">
+        <div class="form-grid">
+          <label class="form-field form-wide">Recipe name
+            <input name="name" required maxlength="80" placeholder="e.g. Sunday tomato pasta">
+          </label>
+          <label class="form-field">Cuisine or category
+            <input name="cuisine" required maxlength="50" placeholder="e.g. Italian">
+          </label>
+          <label class="form-field">Dish type
+            <select name="dish" required>
+              <option value="Main">Main</option>
+              <option value="Dessert">Dessert</option>
+              <option value="Drink">Drink</option>
+              <option value="Side">Side</option>
+              <option value="Snack">Snack</option>
+            </select>
+          </label>
+          <label class="form-field">Difficulty
+            <select name="difficulty" required>
+              <option value="easy">Easy</option>
+              <option value="medium">Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </label>
+          <label class="form-field">Servings
+            <input name="servings" required maxlength="20" placeholder="e.g. 4">
+          </label>
+          <label class="form-field">Prep time
+            <input name="prepTime" required maxlength="30" placeholder="e.g. 15 min">
+          </label>
+          <label class="form-field">Cook time
+            <input name="cookTime" required maxlength="30" placeholder="e.g. 30 min">
+          </label>
+          <label class="form-field form-wide">Short description
+            <input name="description" required maxlength="300" placeholder="What makes this one special?">
+          </label>
+          <label class="form-field form-wide">Photo URL <span class="optional-label">optional</span>
+            <input name="image" type="url" maxlength="500" placeholder="https://…">
+          </label>
+          <label class="form-field form-wide">Ingredients <span class="field-hint">One ingredient per line</span>
+            <textarea name="ingredients" required rows="4" maxlength="6000" placeholder="2 cups flour&#10;1 tsp salt"></textarea>
+          </label>
+          <label class="form-field form-wide">Instructions <span class="field-hint">One step per line</span>
+            <textarea name="steps" required rows="5" maxlength="6000" placeholder="Preheat the oven…&#10;Mix the ingredients…"></textarea>
+          </label>
+          <label class="form-field form-wide">Your name <span class="optional-label">optional</span>
+            <input name="contributor" maxlength="50" placeholder="How should we credit you?">
+          </label>
+        </div>
+        <p class="form-message" id="formMessage" role="status" aria-live="polite"></p>
+        <button class="submit-recipe" type="submit">Add to the cookbook <span>→</span></button>
+      </form>
+    </section>
   </div>
 
   <!-- ── FOOTER ── -->

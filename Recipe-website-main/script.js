@@ -11,7 +11,7 @@ const recipes = [
     cookTime: "",
     totalTime: "",
     servings: "1",
-    ingredients: ["1/3 small onion", "2 garlic cloves", "mince chicken","mushrooms", "Pasta", "sauce"],
+    ingredients: ["1/3 small onion", "2 garlic cloves", "mince chicken", "mushrooms", "Pasta", "sauce"],
     steps: [
       "difrose chicken",
       "peel onion and garlic",
@@ -30,9 +30,8 @@ const recipes = [
       "Add salt to taste",
       "Add blackpepper",
       "Enjoy your meal!"
-    ],
+    ]
   },
-
   {
     id: 2,
     name: "kangkung goreng Belacan",
@@ -41,7 +40,7 @@ const recipes = [
     category: "Vegetable",
     difficulty: "easy",
     description: "Delicious kangkung belacan",
-    image: "kangkung Goreng Belacan.jpg",
+    image: "Kangkung Goreng belacan.jpg",
     prepTime: "2 min",
     cookTime: "4 min",
     totalTime: "6 min",
@@ -56,124 +55,254 @@ const recipes = [
       "Add Oyster sauce",
       "Add Ajino moto",
       "Enjoy Your Meal❤️"
-    ],
-  },
+    ]
+  }
 ];
 
-let activeFilter = 'all';
+let activeFilter = "all";
+
+function createTextElement(tag, className, text) {
+  const element = document.createElement(tag);
+  element.className = className;
+  element.textContent = text;
+  return element;
+}
 
 function renderCards(list) {
-  const grid = document.getElementById('recipeGrid');
-  const noResults = document.getElementById('noResults');
-  const countEl = document.getElementById('recipeCount');
-  const existing = grid.querySelectorAll('.recipe-card');
-  existing.forEach(c => c.remove());
+  const grid = document.getElementById("recipeGrid");
+  const noResults = document.getElementById("noResults");
+  const countEl = document.getElementById("recipeCount");
+  grid.querySelectorAll(".recipe-card").forEach(card => card.remove());
+  noResults.style.display = list.length ? "none" : "block";
+  countEl.textContent = `${list.length} recipe${list.length === 1 ? "" : "s"}`;
 
-  if (list.length === 0) {
-    noResults.style.display = 'block';
-    countEl.textContent = '0 recipes';
-  } else {
-    noResults.style.display = 'none';
-    countEl.textContent = `${list.length} recipe${list.length !== 1 ? 's' : ''}`;
-    list.forEach(r => {
-      const diffClass = r.difficulty === 'easy' ? 'diff-easy' : r.difficulty === 'hard' ? 'diff-hard' : 'diff-medium';
-      const card = document.createElement('div');
-      card.className = 'recipe-card';
-      card.innerHTML = `
-        <div class="card-img-wrap">
-          <img src="${r.image}" alt="${r.name}" loading="lazy">
-          <span class="card-cuisine">${r.cuisine}</span>
-          <span class="card-difficulty ${diffClass}">${r.difficulty.charAt(0).toUpperCase() + r.difficulty.slice(1)}</span>
-        </div>
-        <div class="card-body">
-          <div class="card-title">${r.name}</div>
-          <div class="card-desc">${r.description}</div>
-          <div class="card-meta">
-            <span class="meta-item"><span class="meta-icon">⏱</span> ${r.totalTime}</span>
-            <span class="meta-item"><span class="meta-icon">🍽</span> Serves ${r.servings}</span>
-            <span class="meta-item"><span class="meta-icon">📋</span> ${r.ingredients.length} ingredients</span>
-          </div>
-        </div>`;
-      card.addEventListener('click', () => openModal(r));
-      grid.appendChild(card);
+  list.forEach(recipe => {
+    const card = document.createElement("article");
+    card.className = "recipe-card";
+    card.tabIndex = 0;
+    card.setAttribute("role", "button");
+    card.setAttribute("aria-label", `View ${recipe.name}`);
+
+    const imageWrap = document.createElement("div");
+    imageWrap.className = "card-img-wrap";
+    imageWrap.appendChild(createTextElement("span", "card-image-placeholder", "✦"));
+    if (recipe.image) {
+      const image = document.createElement("img");
+      image.src = recipe.image;
+      image.alt = recipe.name;
+      image.loading = "lazy";
+      imageWrap.appendChild(image);
+    }
+    imageWrap.appendChild(createTextElement("span", "card-cuisine", recipe.cuisine));
+    const difficulty = createTextElement(
+      "span",
+      `card-difficulty diff-${recipe.difficulty}`,
+      recipe.difficulty.charAt(0).toUpperCase() + recipe.difficulty.slice(1)
+    );
+    imageWrap.appendChild(difficulty);
+
+    const body = document.createElement("div");
+    body.className = "card-body";
+    body.appendChild(createTextElement("h3", "card-title", recipe.name));
+    body.appendChild(createTextElement("p", "card-desc", recipe.description));
+
+    const meta = document.createElement("div");
+    meta.className = "card-meta";
+    const time = recipe.totalTime || [recipe.prepTime, recipe.cookTime].filter(Boolean).join(" + ") || "Time varies";
+    [
+      ["⏱", time],
+      ["🍽", `Serves ${recipe.servings}`],
+      ["📋", `${recipe.ingredients.length} ingredients`]
+    ].forEach(([icon, text]) => {
+      const item = document.createElement("span");
+      item.className = "meta-item";
+      item.appendChild(createTextElement("span", "meta-icon", icon));
+      item.appendChild(document.createTextNode(text));
+      meta.appendChild(item);
     });
-  }
+    body.appendChild(meta);
+
+    card.append(imageWrap, body);
+    card.addEventListener("click", () => openModal(recipe));
+    card.addEventListener("keydown", event => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        openModal(recipe);
+      }
+    });
+    grid.appendChild(card);
+  });
 }
 
 function filterRecipes() {
-  const q = document.getElementById('searchInput').value.toLowerCase();
+  const query = document.getElementById("searchInput").value.trim().toLowerCase();
   let list = recipes;
 
-  if (activeFilter !== 'all') {
-    if (['easy', 'medium', 'hard'].includes(activeFilter)) {
-      // Filter by difficulty
-      list = list.filter(r => r.difficulty === activeFilter);
-    } else if (activeFilter === 'Vegetarian') {
-      // Filter by vegetarian category
-      list = list.filter(r => r.category === 'Vegetarian');
-    } else if (['Main', 'Dessert', 'Drink'].includes(activeFilter)) {
-      // Filter by dish type
-      list = list.filter(r => r.dish === activeFilter.toLowerCase());
+  if (activeFilter !== "all") {
+    if (["easy", "medium", "hard"].includes(activeFilter)) {
+      list = list.filter(recipe => recipe.difficulty === activeFilter);
+    } else if (activeFilter === "Vegetable") {
+      list = list.filter(recipe => recipe.category === "Vegetable" || recipe.cuisine === "Vegetable");
+    } else if (["Main", "Dessert", "Drink"].includes(activeFilter)) {
+      list = list.filter(recipe => recipe.dish.toLowerCase() === activeFilter.toLowerCase());
     } else {
-      // Filter by cuisine
-      list = list.filter(r => r.cuisine === activeFilter);
+      list = list.filter(recipe => recipe.cuisine.toLowerCase() === activeFilter.toLowerCase());
     }
   }
 
-  if (q) list = list.filter(r =>
-    r.name.toLowerCase().includes(q) ||
-    r.cuisine.toLowerCase().includes(q) ||
-    r.description.toLowerCase().includes(q)
-  );
-
+  if (query) {
+    list = list.filter(recipe =>
+      [recipe.name, recipe.cuisine, recipe.description, recipe.contributor || ""]
+        .some(value => value.toLowerCase().includes(query))
+    );
+  }
   renderCards(list);
 }
 
-function setFilter(filter, el) {
-  document.querySelectorAll('.tag').forEach(t => t.classList.remove('active'));
-  el.classList.add('active');
+function setFilter(filter, element) {
+  document.querySelectorAll(".tag").forEach(tag => tag.classList.remove("active"));
+  element.classList.add("active");
   activeFilter = filter;
   filterRecipes();
 }
 
-function openModal(r) {
-  document.getElementById('mImg').src = r.image;
-  document.getElementById('mImg').alt = r.name;
-  document.getElementById('mTitle').textContent = r.name;
-  document.getElementById('mCuisine').textContent = r.cuisine;
-  const mainBadge = document.getElementById('mMain');
-  mainBadge.textContent = r.dish ? r.dish.charAt(0).toUpperCase() + r.dish.slice(1) : '';
-  mainBadge.className = 'modal-main-badge' + (r.dish ? ` dish-${r.dish}` : '');
-  document.getElementById('mPrepTime').textContent = r.prepTime;
-  document.getElementById('mCookTime').textContent = r.cookTime;
-  document.getElementById('mServings').textContent = r.servings;
+function openModal(recipe) {
+  const image = document.getElementById("mImg");
+  image.alt = recipe.name;
+  image.hidden = !recipe.image;
+  if (recipe.image) image.src = recipe.image;
 
-  const ingGrid = document.getElementById('mIngredients');
-  ingGrid.innerHTML = r.ingredients.map(ing =>
-    `<div class="ingredient-item"><span class="ingredient-dot"></span>${ing}</div>`
-  ).join('');
+  document.getElementById("mTitle").textContent = recipe.name;
+  document.getElementById("mCuisine").textContent = recipe.cuisine;
+  const mainBadge = document.getElementById("mMain");
+  mainBadge.textContent = recipe.dish || "";
+  mainBadge.className = `modal-main-badge${recipe.dish ? ` dish-${recipe.dish.toLowerCase()}` : ""}`;
+  document.getElementById("mPrepTime").textContent = recipe.prepTime;
+  document.getElementById("mCookTime").textContent = recipe.cookTime;
+  document.getElementById("mServings").textContent = recipe.servings;
 
-  const stepsList = document.getElementById('mSteps');
-  stepsList.innerHTML = r.steps.map((s, i) =>
-    `<li class="step-item"><span class="step-num">${i + 1}</span><span>${s}</span></li>`
-  ).join('');
+  const ingredients = document.getElementById("mIngredients");
+  ingredients.replaceChildren(...recipe.ingredients.map(ingredient => {
+    const item = document.createElement("div");
+    item.className = "ingredient-item";
+    item.append(createTextElement("span", "ingredient-dot", ""), document.createTextNode(ingredient));
+    return item;
+  }));
 
-  document.getElementById('mTips').innerHTML = r.tips || '';
-  document.getElementById('modalOverlay').classList.add('open');
-  document.body.style.overflow = 'hidden';
+  const steps = document.getElementById("mSteps");
+  steps.replaceChildren(...recipe.steps.map((step, index) => {
+    const item = document.createElement("li");
+    item.className = "step-item";
+    item.append(createTextElement("span", "step-num", String(index + 1)), document.createTextNode(step));
+    return item;
+  }));
+
+  const tips = document.getElementById("mTips");
+  tips.textContent = recipe.tips || "";
+  tips.hidden = !recipe.tips;
+  document.getElementById("modalOverlay").classList.add("open");
+  document.body.style.overflow = "hidden";
 }
 
-function closeModal(e) {
-  if (e.target === document.getElementById('modalOverlay')) closeModalDirect();
+function closeModal(event) {
+  if (event.target === document.getElementById("modalOverlay")) closeModalDirect();
 }
 
 function closeModalDirect() {
-  document.getElementById('modalOverlay').classList.remove('open');
-  document.body.style.overflow = '';
+  document.getElementById("modalOverlay").classList.remove("open");
+  document.body.style.overflow = "";
 }
 
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') closeModalDirect();
+function openAddRecipe() {
+  document.getElementById("addRecipeOverlay").classList.add("open");
+  document.body.style.overflow = "hidden";
+  document.querySelector("#addRecipeForm [name=name]").focus();
+}
+
+function closeAddRecipe(event) {
+  if (event.target === document.getElementById("addRecipeOverlay")) closeAddRecipeDirect();
+}
+
+function closeAddRecipeDirect() {
+  document.getElementById("addRecipeOverlay").classList.remove("open");
+  document.body.style.overflow = "";
+}
+
+function showApiStatus(message, isError = false) {
+  const status = document.getElementById("apiStatus");
+  status.textContent = message;
+  status.classList.toggle("status-error", isError);
+}
+
+async function loadCommunityRecipes() {
+  try {
+    const response = await fetch("/api/recipes");
+    if (!response.ok) throw new Error(`Server returned ${response.status}`);
+    const sharedRecipes = await response.json();
+    if (!Array.isArray(sharedRecipes)) throw new Error("Recipe data is invalid");
+    recipes.push(...sharedRecipes);
+    filterRecipes();
+    showApiStatus(`${sharedRecipes.length} community recipe${sharedRecipes.length === 1 ? "" : "s"} shared so far`);
+  } catch (error) {
+    showApiStatus("Community recipes need the website server to be running. Existing recipes are still available.", true);
+    console.error("Could not load community recipes:", error);
+  }
+}
+
+document.getElementById("addRecipeForm").addEventListener("submit", async event => {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const fields = new FormData(form);
+  const lines = name => String(fields.get(name)).split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+  const recipe = {
+    name: String(fields.get("name")).trim(),
+    cuisine: String(fields.get("cuisine")).trim(),
+    dish: String(fields.get("dish")),
+    difficulty: String(fields.get("difficulty")),
+    description: String(fields.get("description")).trim(),
+    image: String(fields.get("image")).trim(),
+    prepTime: String(fields.get("prepTime")).trim(),
+    cookTime: String(fields.get("cookTime")).trim(),
+    servings: String(fields.get("servings")).trim(),
+    contributor: String(fields.get("contributor")).trim(),
+    ingredients: lines("ingredients"),
+    steps: lines("steps")
+  };
+  const message = document.getElementById("formMessage");
+  const submitButton = form.querySelector(".submit-recipe");
+  message.textContent = "";
+  submitButton.disabled = true;
+  submitButton.textContent = "Adding your recipe…";
+
+  try {
+    const response = await fetch("/api/recipes", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(recipe)
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || `Server returned ${response.status}`);
+
+    recipes.push(result);
+    filterRecipes();
+    form.reset();
+    closeAddRecipeDirect();
+    showApiStatus("Your recipe is now part of the community cookbook. Thank you for sharing!");
+  } catch (error) {
+    message.textContent = `${error.message}. Please try again.`;
+    console.error("Could not add recipe:", error);
+  } finally {
+    submitButton.disabled = false;
+    submitButton.innerHTML = 'Add to the cookbook <span>→</span>';
+  }
+});
+
+document.addEventListener("keydown", event => {
+  if (event.key === "Escape") {
+    closeModalDirect();
+    closeAddRecipeDirect();
+  }
 });
 
 renderCards(recipes);
+loadCommunityRecipes();
