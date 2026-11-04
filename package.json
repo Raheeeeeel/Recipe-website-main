@@ -1,7 +1,7 @@
 {
   "name": "recipe-website-main",
   "version": "1.0.0",
-  "description": "",
+  "description": "From the repository root, start the website with Node.js 18 or newer:",
   "main": "index.js",
   "scripts": {
     "start": "node server.js",
