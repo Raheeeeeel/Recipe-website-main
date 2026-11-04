@@ -4,6 +4,7 @@ const { readFile, rename, writeFile } = require("node:fs/promises");
 const path = require("node:path");
 
 const port = Number(process.env.PORT || 3000);
+const allowPortFallback = !process.env.PORT;
 const root = __dirname;
 const recipesPath = path.join(root, "recipes.json");
 const allowedFiles = new Map([
@@ -19,6 +20,35 @@ const submissions = new Map();
 let writeQueue = Promise.resolve();
 
 class ValidationError extends Error {}
+
+function listen(server, port, host, allowFallback) {
+  return new Promise((resolve, reject) => {
+    let currentPort = port;
+
+    const tryListen = () => {
+      const onListening = () => {
+        server.removeListener("error", onError);
+        resolve(currentPort);
+      };
+      const onError = error => {
+        server.removeListener("listening", onListening);
+        server.removeListener("error", onError);
+        if (allowFallback && error.code === "EADDRINUSE" && currentPort < 65535) {
+          currentPort += 1;
+          tryListen();
+          return;
+        }
+        reject(error);
+      };
+
+      server.once("listening", onListening);
+      server.once("error", onError);
+      server.listen(currentPort, host);
+    };
+
+    tryListen();
+  });
+}
 
 function sendJson(response, status, value) {
   response.writeHead(status, {
@@ -225,12 +255,18 @@ async function start() {
       else response.destroy();
     });
   });
-  server.listen(port, process.env.HOST || "0.0.0.0", () => {
-    console.log(`Recipe Book is running at http://localhost:${port}`);
-  });
+  const listeningPort = await listen(server, port, process.env.HOST || "0.0.0.0", allowPortFallback);
+  if (listeningPort !== port) {
+    console.warn(`Port ${port} is already in use; using port ${listeningPort} instead.`);
+  }
+  console.log(`Recipe Book is running at http://localhost:${listeningPort}`);
 }
 
 start().catch(error => {
-  console.error("Could not start Recipe Book:", error);
+  if (error.code === "EADDRINUSE") {
+    console.error(`Port ${port} is already in use. Stop the other server or set a different port, for example: $env:PORT=3001; node server.js`);
+  } else {
+    console.error("Could not start Recipe Book:", error);
+  }
   process.exitCode = 1;
 });
