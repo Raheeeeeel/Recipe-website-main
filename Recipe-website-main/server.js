@@ -231,6 +231,7 @@ async function handleRequest(request, response) {
     response.writeHead(200, {
       "Content-Type": file[1],
       "Content-Length": contents.length,
+      "Cache-Control": "no-store",
       "X-Content-Type-Options": "nosniff"
     });
     response.end(request.method === "HEAD" ? undefined : contents);

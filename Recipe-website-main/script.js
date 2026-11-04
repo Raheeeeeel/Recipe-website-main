@@ -240,6 +240,9 @@ function showApiStatus(message, isError = false) {
 async function readJsonResponse(response) {
   const contentType = response.headers.get("content-type") || "";
   const body = await response.text();
+  if (!body.trim()) {
+    throw new Error(`The recipe API returned an empty response${response.status ? ` (HTTP ${response.status})` : ""}. Please try again.`);
+  }
   if (!contentType.toLowerCase().includes("application/json")) {
     if (/<(?:!doctype|html)\b/i.test(body)) {
       throw new Error("The recipe API returned an HTML page instead of JSON. Start the website with `npm start` and open http://localhost:3000, or deploy server.js with a Node.js host.");
