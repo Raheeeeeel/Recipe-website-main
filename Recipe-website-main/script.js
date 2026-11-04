@@ -105,6 +105,9 @@ function renderCards(list) {
     body.className = "card-body";
     body.appendChild(createTextElement("h3", "card-title", recipe.name));
     body.appendChild(createTextElement("p", "card-desc", recipe.description));
+    if (recipe.contributor) {
+      body.appendChild(createTextElement("p", "card-author", `Shared by ${recipe.contributor}`));
+    }
 
     const meta = document.createElement("div");
     meta.className = "card-meta";
