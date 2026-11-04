@@ -237,11 +237,28 @@ function showApiStatus(message, isError = false) {
   status.classList.toggle("status-error", isError);
 }
 
+async function readJsonResponse(response) {
+  const contentType = response.headers.get("content-type") || "";
+  const body = await response.text();
+  if (!contentType.toLowerCase().includes("application/json")) {
+    if (/<(?:!doctype|html)\b/i.test(body)) {
+      throw new Error("The recipe API returned an HTML page instead of JSON. Start the website with `npm start` and open http://localhost:3000, or deploy server.js with a Node.js host.");
+    }
+    throw new Error("The recipe API returned an unexpected response instead of JSON.");
+  }
+
+  try {
+    return JSON.parse(body);
+  } catch {
+    throw new Error("The recipe API returned invalid JSON.");
+  }
+}
+
 async function loadCommunityRecipes() {
   try {
     const response = await fetch("/api/recipes");
     if (!response.ok) throw new Error(`Server returned ${response.status}`);
-    const sharedRecipes = await response.json();
+    const sharedRecipes = await readJsonResponse(response);
     if (!Array.isArray(sharedRecipes)) throw new Error("Recipe data is invalid");
     recipes.push(...sharedRecipes);
     filterRecipes();
@@ -283,7 +300,7 @@ document.getElementById("addRecipeForm").addEventListener("submit", async event 
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(recipe)
     });
-    const result = await response.json();
+    const result = await readJsonResponse(response);
     if (!response.ok) throw new Error(result.error || `Server returned ${response.status}`);
 
     recipes.push(result);
