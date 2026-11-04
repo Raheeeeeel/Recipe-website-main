@@ -138,7 +138,13 @@ function validateRecipe(input) {
 
 async function getRecipes() {
   const data = await readFile(recipesPath, "utf8");
-  const recipes = JSON.parse(data);
+  if (!data.trim()) return [];
+  let recipes;
+  try {
+    recipes = JSON.parse(data);
+  } catch (error) {
+    throw new Error("recipes.json contains invalid JSON", { cause: error });
+  }
   if (!Array.isArray(recipes)) throw new Error("recipes.json must contain a JSON array");
   return recipes;
 }
@@ -243,7 +249,8 @@ async function handleRequest(request, response) {
 
 async function start() {
   try {
-    await readFile(recipesPath);
+    const data = await readFile(recipesPath, "utf8");
+    if (!data.trim()) await writeFile(recipesPath, "[]\n", "utf8");
   } catch (error) {
     if (error.code !== "ENOENT") throw error;
     await writeFile(recipesPath, "[]\n", { encoding: "utf8", flag: "wx" });
